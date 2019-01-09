@@ -13,7 +13,7 @@ Clone and install thought4j before building jtminer.
 
 Once thought4j is installed, clone and build cogitate.
 
-`git clone https://github.com/thoughtnetwork/cogitate`  
+`git clone https://github.com/thoughtnetwork/cogitate.git`  
 `cd cogitate`  
 `mvn install`  
 
