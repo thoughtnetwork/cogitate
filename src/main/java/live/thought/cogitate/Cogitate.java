@@ -1,3 +1,22 @@
+/*
+ * cogitate - Blockchain browser for the Thought Network.
+ * 
+ * Copyright (c) 2018 - 2019, Thought Network LLC
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License, version 2, as 
+ * published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
 package live.thought.cogitate;
 
 import java.io.File;
@@ -315,7 +334,7 @@ public class Cogitate
         response.getWriter().println("/getblock?hash=" + bci.bestBlockHash() + "'>" + bci.bestBlockHash() + "</a></td></tr>");
         response.getWriter().println("<tr><td>Difficulty</td><td>" + bci.difficulty() + "</td></tr>");
         response.getWriter().println("<tr><td>Chainwork</td><td>" + bci.chainWork() + "</td></tr>");
-        response.getWriter().println("<tr><td>Verification Progress</td><td>" + bci.verificationProgress() + "</td></tr>");
+        response.getWriter().println("<tr><td>Verification Progress</td><td>" + Math.round(bci.verificationProgress() * 100) + "%</td></tr>");
         response.getWriter().println("</table>");
         response.getWriter().println("</article>");
         response.getWriter().println("</section>");
