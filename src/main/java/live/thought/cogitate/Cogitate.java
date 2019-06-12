@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -68,12 +69,14 @@ public class Cogitate
   private static final String              DEFAULT_PORT        = "10617";
   private static final String              DEFAULT_USER        = "user";
   private static final String              DEFAULT_PASS        = "pass";
+  private static final String              DEFAULT_SERVER_HOST = "0.0.0.0";
   private static final String              DEFAULT_SERVER_PORT = "3141";
   /** Configuration options. **/
   private static final String              RPC_HOST            = "rpc.host";
   private static final String              RPC_PORT            = "rpc.port";
   private static final String              RPC_USER            = "rpc.user";
   private static final String              RPC_PASS            = "rpc.pass";
+  private static final String              SERVER_HOST         = "server.host";
   private static final String              SERVER_PORT         = "server.port";
   
   private static final String              RESOURCE_PATH       = "res";
@@ -83,6 +86,7 @@ public class Cogitate
   private static final Logger              mainLogger;
 
   /** Server Properties **/
+  protected String                         serverHost;
   protected int                            serverPort;
   protected String                         rpcHost;
   protected int                            rpcPort;
@@ -118,6 +122,7 @@ public class Cogitate
     options.addOption("P", "port", true, "Thought RPC server port (default: 10617)");
     options.addOption("u", "user", true, "Thought server RPC user");
     options.addOption("p", "password", true, "Thought server RPC password");
+    options.addOption("b", "server-host", true, "Cogitate server bind address (default: all interfaces)");
     options.addOption("s", "server-port", true, "Cogitate server port (default: 3141)");
   }
 
@@ -131,6 +136,7 @@ public class Cogitate
       rpcPort = Integer.parseInt(props.getProperty(RPC_PORT, DEFAULT_PORT));
       rpcUser = props.getProperty(RPC_USER, DEFAULT_USER);
       rpcPass = props.getProperty(RPC_PASS, DEFAULT_PASS);
+      serverHost = props.getProperty(SERVER_HOST, DEFAULT_SERVER_HOST);
       serverPort = Integer.parseInt(props.getProperty(SERVER_PORT, DEFAULT_SERVER_PORT));
 
     }
@@ -138,7 +144,7 @@ public class Cogitate
 
   public void run()
   {
-    Server server = new Server(serverPort);
+    Server server = new Server(new InetSocketAddress(serverHost, serverPort));
     ServletHandler handler = new ServletHandler();
     server.setHandler(handler);
     handler.addServletWithMapping(BlockServlet.class, "/getblock");
@@ -161,6 +167,16 @@ public class Cogitate
     {
       LOG.warning("Interrupted during server.join()");
     }
+  }
+
+  public String getServerHost()
+  {
+    return serverHost;
+  }
+
+  public void setServerHost(String serverHost)
+  {
+    this.serverHost = serverHost;
   }
 
   public int getServerPort()
@@ -267,6 +283,10 @@ public class Cogitate
       if (commandLine.hasOption("password"))
       {
         props.setProperty(RPC_PASS, commandLine.getOptionValue("password"));
+      }
+      if (commandLine.hasOption("server-host"))
+      {
+        props.setProperty(SERVER_HOST, commandLine.getOptionValue("server-host"));
       }
       if (commandLine.hasOption("server-port"))
       {
