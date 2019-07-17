@@ -35,7 +35,7 @@ public class BlockServlet extends HttpServlet
 {
   /** Thoughtd Client **/
   private ThoughtRPCClient client;
-  private final TemplateRenderer renderer = new TemplateRenderer("block.html");
+  private static final TemplateRenderer renderer = new TemplateRenderer("block.html");
 
   public BlockServlet()
   {

@@ -37,7 +37,7 @@ public class BlockchainInfoServlet extends HttpServlet
   /** Thoughtd Client **/
   private ThoughtRPCClient client;
   /** Template renderer **/
-  private final TemplateRenderer renderer = new TemplateRenderer("blockchaininfo.html");
+  private static final TemplateRenderer renderer = new TemplateRenderer("blockchaininfo.html");
 
   public BlockchainInfoServlet()
   {

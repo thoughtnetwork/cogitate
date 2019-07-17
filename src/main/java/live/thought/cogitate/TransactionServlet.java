@@ -35,7 +35,7 @@ public class TransactionServlet extends HttpServlet
 {
   /** Thoughtd Client **/
   private ThoughtRPCClient client;
-  private final TemplateRenderer renderer = new TemplateRenderer("transaction.html");
+  private static final TemplateRenderer renderer = new TemplateRenderer("transaction.html");
 
   public TransactionServlet()
   {
