@@ -1,10 +1,10 @@
 /*
  * cogitate - Blockchain browser for the Thought Network.
- * 
+ *
  * Copyright (c) 2018 - 2019, Thought Network LLC
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as 
+ * it under the terms of the GNU General Public License, version 2, as
  * published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful,
@@ -64,8 +64,6 @@ public class Cogitate
   private static final String              RPC_PASS            = "rpc.pass";
   private static final String              SERVER_HOST         = "server.host";
   private static final String              SERVER_PORT         = "server.port";
-
-  static final String                      RESOURCE_PATH       = "res";
 
   /** Logging **/
   private static final Logger              LOG;
@@ -297,10 +295,5 @@ public class Cogitate
       e.printStackTrace(System.err);
     }
 
-  }
-
-  static String baseUrl(HttpServletRequest request)
-  {
-    return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
   }
 }

@@ -9,6 +9,16 @@
 	<description>Blockchain Browser Servlet for Thought Network</description>
 	<dependencies>
 		<dependency>
+			<groupId>io.pebbletemplates</groupId>
+			<artifactId>pebble</artifactId>
+			<version>3.0.10</version>
+		</dependency>
+		<dependency>
+			<groupId>org.owasp.encoder</groupId>
+			<artifactId>encoder</artifactId>
+			<version>1.2.2</version>
+		</dependency>
+		<dependency>
 			<groupId>live.thought</groupId>
 			<artifactId>thought4j</artifactId>
 			<version>0.1-SNAPSHOT</version>

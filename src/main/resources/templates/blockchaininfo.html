@@ -1,0 +1,30 @@
+{% extends '_base.html' %}
+{% block content %}
+<h1>Thought Blockchain Info</h1>
+<table>
+  <tr>
+    <td>Network</td>
+    <td>{{ bci.chain }}</td>
+  </tr>
+  <tr>
+    <td>Number of blocks</td>
+    <td>{{ bci.blocks }}</td>
+  </tr>
+  <tr>
+    <td>Best block hash</td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ bci.bestBlockHash }}">{{ bci.bestBlockHash }}</td>
+  </tr>
+  <tr>
+    <td>Difficulty</td>
+    <td>{{ bci.difficulty }}</td>
+  </tr>
+  <tr>
+    <td>Chainwork</td>
+    <td>{{ bci.chainWork }}</td>
+  </tr>
+  <tr>
+    <td>Verification progress</td>
+    <td>{{ verificationProgress }}%</td>
+  </tr>
+</table>
+{% endblock %}

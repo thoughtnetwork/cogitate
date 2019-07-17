@@ -1,0 +1,91 @@
+{% extends '_base.html' %}
+{% block content %}
+<h1>Transaction {{ tx.txId }}</h1>
+<table>
+  <tr>
+    <td>Version</td>
+    <td>{{ tx.version() }}</td>
+  </tr>
+  <tr>
+    <td>Time</td>
+    <td>{{ timetag(tx.time) }}</td>
+  </tr>
+  <tr>
+    <td>Block Time</td>
+    <td>{{ timetag(tx.blocktime) }}</td>
+  </tr>
+  <tr>
+    {% set blockhash = tx.blockHash %}
+    <td>Block Hash</td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ blockhash }}">{{ blockhash }}</a></td>
+  </tr>
+  <tr>
+    <td>Size</td>
+    <td>{{ tx.size }}</td>
+  </tr>
+  <tr>
+    <td>Confirmations</td>
+    <td>{{ tx.confirmations }}</td>
+  </tr>
+  <tr>
+    <td>Lock Time</td>
+    <td>{{ tx.lockTime }}</td>
+  </tr>
+</table>
+
+<h3>Inputs</h3>
+<table>
+  {% set header = false %}
+  {% for input in tx.vIn %}
+    {% if input.coinbase %}
+      <tr>
+        <td colspan="3">Coinbase</td>
+      </tr>
+    {% else %}
+      {% if not header %}
+        <tr>
+          <th>Sequence</th>
+          <th>Transaction ID</th>
+          <th>Value</th>
+        </tr>
+        {% set header = true %}
+      {% endif %}
+      {% set output = input.transactionOutput %}
+      <tr>
+        <td>{{ input.sequence }}</td>
+        <td>{{ output.transaction.hash }}</td>
+        <td>{{ output.value }}</td>
+      </tr>
+    {% endif %}
+  {% endfor %}
+</table>
+
+<h3>Outputs</h3>
+<table>
+  <thead>
+    <tr>
+      <th>Address</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for output in tx.vOut %}
+    <tr>
+      <td>
+        {% set pubkey = output.scriptPubKey %}
+        {% set addresses = pubkey.addresses %}
+        {% if addresses is not empty %}
+          {% for address in addresses %}
+            {{ address }}
+            {% if not loop.first %}<br>{% endif %}
+          {% endfor %}
+        {% else %}
+          {{ pubkey.hex }}
+        {% endif %}
+      </td>
+      <td>{{ output.value }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

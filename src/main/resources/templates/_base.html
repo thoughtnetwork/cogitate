@@ -1,0 +1,35 @@
+{% macro timetag(datetime) %}
+  <time datetime="{{ datetime | date("yyyy-MM-dd'T'HH:mm:ss.SSSZ") }}">
+    {{ datetime }}
+  </time>
+{% endmacro %}
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>{% block title %}Cogitate - Thought Network Blockchain Browser{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ baseUrl }}/resources/style.css">
+  </head>
+  <body>
+    <header>
+      <img src="{{ baseUrl }}/resources/logo-green-white.png">
+      <h2>Cogitate</h2>
+      <h3>Thought Network Blockchain Browser</h3>
+    </header>
+    <section>
+      <nav>
+        <ul>
+          <li><a href="{{ baseUrl }}">Home</a></li>
+        </ul>
+      </nav>
+      <article>
+        {% block content %}{% endblock %}
+      </article>
+    </section>
+    <footer>
+      <p>Copyright &copy; 2017-{{ copyrightYear }} Thought Networks LLC</p>
+    </footer>
+    <script src="{{ baseUrl }}/resources/render_time.js"></script>
+  </body>
+</html>

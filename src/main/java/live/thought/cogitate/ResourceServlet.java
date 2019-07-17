@@ -1,10 +1,10 @@
 /*
  * cogitate - Blockchain browser for the Thought Network.
- * 
+ *
  * Copyright (c) 2018 - 2019, Thought Network LLC
  *
  * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License, version 2, as 
+ * it under the terms of the GNU General Public License, version 2, as
  * published by the Free Software Foundation.
  *
  * This program is distributed in the hope that it will be useful,
@@ -22,6 +22,8 @@ package live.thought.cogitate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -31,14 +33,28 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class ResourceServlet extends HttpServlet
 {
+  private static Map<String, String> mimetypes;
+  private static final String RESOURCE_PATH = "static";
+
+  static
+  {
+    mimetypes = new HashMap<>();
+    mimetypes.put("png", "image/png");
+    mimetypes.put("jpeg", "image/jpeg");
+    mimetypes.put("jpg", "image/jpeg");
+    mimetypes.put("css", "text/css");
+    mimetypes.put("js", "application/javascript");
+  }
 
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
     try
     {
-      String resource = Cogitate.RESOURCE_PATH + request.getPathInfo();
-      response.setContentType("image/png");
+      String pathinfo = request.getPathInfo();
+      String[] name_parts = pathinfo.split("\\.");
+      String resource = RESOURCE_PATH + pathinfo;
+      response.setContentType(mimetypes.getOrDefault(name_parts[name_parts.length - 1], "application/octet-stream"));
       response.setStatus(HttpServletResponse.SC_OK);
       InputStream instream = Cogitate.class.getClassLoader().getResourceAsStream(resource);
       OutputStream os = response.getOutputStream();

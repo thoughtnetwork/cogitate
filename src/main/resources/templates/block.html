@@ -1,0 +1,46 @@
+{% extends '_base.html' %}
+{# {% from '_macros.html' import timetag %} #}
+{% block content %}
+{% set prevhash = block.previousHash %}
+{% set nexthash = block.nextHash %}
+{% set txns = block.tx %}
+<h1>Block #{{ block.height }} ({{ block.hash }})</h1>
+<table>
+  <tr>
+    <td>Confirmations</td>
+    <td>{{ block.confirmations }}</td>
+  </tr>
+  <tr>
+    <td>Size</td>
+    <td>{{ block.size }}</td>
+  </tr>
+  <tr>
+    <td>Time</td>
+    <td>{{ timetag(block.time) }}</td>
+  </tr>
+  <tr>
+    <td>Version</td>
+    <td>{{ block.version }}</td>
+  </tr>
+  {% if prevhash is not empty %}
+  <tr>
+    <td>Previous block</td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ prevhash }}">{{ prevhash }}</a></td>
+  </tr>
+  {% endif %}
+  {% if nexthash is not empty %}
+  <tr>
+    <td>Next block</td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ nexthash }}">{{ nexthash }}</a></td>
+  </tr>
+  {% endif %}
+</table>
+<h3>Transactions</h3>
+{% if txns is not empty %}
+  {% for tx in txns %}
+    <a href="{{ baseUrl }}/gettransaction?hash={{ tx }}">{{ tx }}</a><br>
+  {% endfor %}
+{% else %}
+  No transactions.
+{% endif %}
+{% endblock %}
