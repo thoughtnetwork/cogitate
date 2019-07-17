@@ -21,14 +21,11 @@ package live.thought.cogitate;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
@@ -36,10 +33,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -49,14 +43,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHandler;
-
-import live.thought.thought4j.ThoughtClientInterface.Block;
-import live.thought.thought4j.ThoughtClientInterface.BlockChainInfo;
-import live.thought.thought4j.ThoughtClientInterface.RawTransaction;
-import live.thought.thought4j.ThoughtClientInterface.RawTransaction.In;
-import live.thought.thought4j.ThoughtClientInterface.RawTransaction.Out;
-import live.thought.thought4j.ThoughtClientInterface.RawTransaction.Out.ScriptPubKey;
-import live.thought.thought4j.ThoughtRPCClient;
 
 public class Cogitate
 {
@@ -78,8 +64,8 @@ public class Cogitate
   private static final String              RPC_PASS            = "rpc.pass";
   private static final String              SERVER_HOST         = "server.host";
   private static final String              SERVER_PORT         = "server.port";
-  
-  private static final String              RESOURCE_PATH       = "res";
+
+  static final String                      RESOURCE_PATH       = "res";
 
   /** Logging **/
   private static final Logger              LOG;
@@ -312,298 +298,9 @@ public class Cogitate
     }
 
   }
-  
-  private static String baseUrl(HttpServletRequest request)
+
+  static String baseUrl(HttpServletRequest request)
   {
     return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-  }
-
-  @SuppressWarnings("serial")
-  public static class BlockchainInfoServlet extends HttpServlet
-  {
-    /** Thoughtd Client **/
-    private ThoughtRPCClient client;
-
-    public BlockchainInfoServlet()
-    {
-      URL thoughtUrl = Cogitate.instance().getThoughtURL();
-      client = new ThoughtRPCClient(thoughtUrl);
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-      try
-      {
-        BlockChainInfo bci = client.getBlockChainInfo();
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println(CogitateStyler.LEADER);
-        response.getWriter().println(CogitateStyler.HEADER.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<section>");
-        response.getWriter().println(CogitateStyler.NAV.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<article>");
-        response.getWriter().println("<h1>Thought Blockchain Info</h1>");
-        response.getWriter().println("<table>");
-        response.getWriter().println("<tr><td>Network</td><td>" + bci.chain() + "</td></tr>");
-        response.getWriter().println("<tr><td>Number of Blocks</td><td>" + bci.blocks() + "</td></tr>");
-        // Link to the top block
-        response.getWriter().print("<tr><td>Best Block Hash</td><td>");
-        response.getWriter().print("<a href='");
-        response.getWriter().print(baseUrl(request));
-        response.getWriter().println("/getblock?hash=" + bci.bestBlockHash() + "'>" + bci.bestBlockHash() + "</a></td></tr>");
-        response.getWriter().println("<tr><td>Difficulty</td><td>" + bci.difficulty() + "</td></tr>");
-        response.getWriter().println("<tr><td>Chainwork</td><td>" + bci.chainWork() + "</td></tr>");
-        response.getWriter().println("<tr><td>Verification Progress</td><td>" + Math.round(bci.verificationProgress() * 100) + "%</td></tr>");
-        response.getWriter().println("</table>");
-        response.getWriter().println("</article>");
-        response.getWriter().println("</section>");
-        response.getWriter().println(CogitateStyler.FOOTER);
-        response.getWriter().println(CogitateStyler.TRAILER);
-      }
-      catch (Exception e)
-      {
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().println("<h1>Thought Daemon not responding.</h1>");
-      }
-    }
-  }
-
-  @SuppressWarnings("serial")
-  public static class TransactionServlet extends HttpServlet
-  {
-    /** Thoughtd Client **/
-    private ThoughtRPCClient client;
-
-    public TransactionServlet()
-    {
-      URL thoughtUrl = Cogitate.instance().getThoughtURL();
-      client = new ThoughtRPCClient(thoughtUrl);
-    }
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-      String hash = request.getParameter("hash");
-      if (null == hash)
-      {
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().println("<h1>No Transaction Hash Specified</h1>");
-      }
-      else
-      {
-        RawTransaction rt = client.getRawTransaction(hash);
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println(CogitateStyler.LEADER);
-        response.getWriter().println(CogitateStyler.HEADER.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<section>");
-        response.getWriter().println(CogitateStyler.NAV.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<article>");
-        response.getWriter().println("<h1>Transaction " + rt.txId() + "</h1>");
-        
-        response.getWriter().println("<table>");
-        response.getWriter().println("<tr><td>Version</td><td>" + rt.version() + "</td></tr>");
-        response.getWriter().println("<tr><td>Time</td><td>" + rt.time() + "</td></tr>");
-        response.getWriter().println("<tr><td>Block Time</td><td>" + rt.blocktime() + "</td></tr>");
-        response.getWriter().print("<tr><td>Block Hash</td><td>");
-        response.getWriter().print("<a href='");
-        response.getWriter().print(baseUrl(request));
-        response.getWriter().println("/getblock?hash=" + rt.blockHash() + "'>" + rt.blockHash() + "</a></td></tr>");        
-        response.getWriter().println("<tr><td>Size</td><td>" + rt.size() + "</td></tr>");
-        response.getWriter().println("<tr><td>Confirmations</td><td>" + rt.confirmations() + "</td></tr>");
-        response.getWriter().println("<tr><td>Lock Time</td><td>" + rt.lockTime() + "</td></tr>");
-        response.getWriter().println("</table>");
-              
-
-        response.getWriter().println("<h3>Inputs</h3>");      
-        List<In> inputs = rt.vIn();
-        response.getWriter().println("<table>");
-        boolean first = true;
-        for (In in : inputs)
-        {
-          if (in.coinbase())
-          {
-            response.getWriter().println("<tr><td>Coinbase</tr></td>");
-          }
-          else
-          {
-            if (first)
-            {
-              response.getWriter().println("<tr>");
-              response.getWriter().println("<th>Sequence</th>");
-              response.getWriter().println("<th>Transaction ID</th>");
-              response.getWriter().println("<th>Value</th>");
-              response.getWriter().println("</tr>");
-              first = false;
-              
-            }
-            response.getWriter().println("<tr>");
-            response.getWriter().println("<td" + in.sequence() + "</td>");
-            Out txout = in.getTransactionOutput();
-            response.getWriter().println("<td>" + txout.transaction().hash() + "</td>");
-            response.getWriter().println("<td>" + txout.value() + "</td>");
-            response.getWriter().println("</tr>");
-          }
-        }
-        response.getWriter().println("</table>");
-        
-        response.getWriter().println("<h3>Outputs</h3>");
-        response.getWriter().println("<table>");
-        List<Out> outputs = rt.vOut();
-        response.getWriter().println("<tr><th>Address</th><th>Value</th></tr>");
-        for (Out out : outputs)
-        {
-          response.getWriter().print("<td>");
-          ScriptPubKey spk = out.scriptPubKey();
-          List<String> addresses = spk.addresses();
-          if (addresses != null && addresses.size() > 0)
-          {
-            boolean addBreak = false;
-            for (String addr : addresses)
-            {
-              response.getWriter().print(addr);
-              if (addBreak)
-              {
-                response.getWriter().print("<br>");
-              }
-              else
-              {
-                addBreak = true;
-              }
-            }      
-          }
-          else
-          {
-            response.getWriter().print(spk.hex());
-          }
-          response.getWriter().println("</td>");
-          response.getWriter().println("<td>" + out.value() + "</td><tr>");
-        }
-     
-        response.getWriter().println("</table>");
-        response.getWriter().println("</article>");
-        response.getWriter().println("</section>");
-        response.getWriter().println(CogitateStyler.FOOTER);
-        response.getWriter().println(CogitateStyler.TRAILER);
-      }
-
-    }
-  }
-
-  @SuppressWarnings("serial")
-  public static class BlockServlet extends HttpServlet
-  {
-    /** Thoughtd Client **/
-    private ThoughtRPCClient client;
-
-    public BlockServlet()
-    {
-      URL thoughtUrl = Cogitate.instance().getThoughtURL();
-      client = new ThoughtRPCClient(thoughtUrl);
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-      String hash = request.getParameter("hash");
-      if (null == hash)
-      {
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().println("<h1>No Block Hash Specified</h1>");
-      }
-      else
-      {
-        Block b = client.getBlock(hash);
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.getWriter().println(CogitateStyler.LEADER);
-        response.getWriter().println(CogitateStyler.HEADER.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<section>");
-        response.getWriter().println(CogitateStyler.NAV.replace("@@BASE_URL@@", baseUrl(request)));
-        response.getWriter().println("<article>");
-        response.getWriter().println("<h1>Block " + b.height() + " (" + b.hash() + ")</h1>");
-        response.getWriter().println("<table>");
-        response.getWriter().println("<tr><td>Confirmations</td><td>" + b.confirmations() + "</td></tr>");
-        response.getWriter().println("<tr><td>Size</td><td>" + b.size() + "</td></tr>");
-        response.getWriter().println("<tr><td>Time</td><td>" + b.time() + "</td></tr>");
-        response.getWriter().println("<tr><td>Version</td><td>" + b.version() + "</td></tr>");
-        String prev = b.previousHash();
-        if (null != prev && prev.length() > 0)
-        {
-          response.getWriter().print("<tr><td>Previous Block</td><td>");
-          response.getWriter().print("<a href='");
-          response.getWriter().print(baseUrl(request));
-          response.getWriter().println("/getblock?hash=" + prev + "'>" + prev + "</a></td></tr>");
-        }
-
-        // Link to the next block if there is one
-        String next = b.nextHash();
-        if (null != next && next.length() > 0)
-        {
-          response.getWriter().print("<tr><td>Next Block</td><td>");
-          response.getWriter().print("<a href='");
-          response.getWriter().print(baseUrl(request));
-          response.getWriter().println("/getblock?hash=" + next + "'>" + next + "</a></td></tr>");
-        }
-
-        response.getWriter().println("</table>");
-        
-        response.getWriter().print("<h3>Transactions</h3>");
-        response.getWriter().println("<table>");
-        List<String> txs = b.tx();
-        if (null != txs)
-        {
-          for (String s : txs)
-          {
-            response.getWriter().print("<a href='");
-            response.getWriter().print(baseUrl(request));
-            response.getWriter().print("/gettransaction?hash=" + s + "'>" + s + "</a><br/>");
-          }
-        }
-        response.getWriter().println("</td></tr>");
-        // Link to the previous block, if there is one
-        response.getWriter().println("</table>");
-        
-        response.getWriter().println("</article>");
-        response.getWriter().println("</section>");
-        response.getWriter().println(CogitateStyler.FOOTER);
-        response.getWriter().println(CogitateStyler.TRAILER);
-      }
-    }
-  }
-  
-  @SuppressWarnings("serial")
-  public static class ResourceServlet extends HttpServlet
-  {
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
-    {
-      try
-      {
-        String resource = RESOURCE_PATH + request.getPathInfo();
-        response.setContentType("image/png");
-        response.setStatus(HttpServletResponse.SC_OK);
-        InputStream instream = Cogitate.class.getClassLoader().getResourceAsStream(resource);
-        OutputStream os = response.getOutputStream();
-        int b = instream.read();
-        while (b != -1)
-        {
-          os.write(b);
-          b = instream.read();
-        }
-        instream.close();
-      }
-      catch (Exception e)
-      {
-        response.setContentType("text/html");
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        e.printStackTrace(System.err);
-      }
-    }
   }
 }
