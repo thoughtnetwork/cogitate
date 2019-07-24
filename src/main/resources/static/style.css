@@ -33,6 +33,14 @@ nav ul {
   padding: 0;
 }
 
+nav ul ul {
+  margin-left: .5em;
+}
+
+nav li {
+  margin: .5em 0;
+}
+
 nav li a {
   display: block;
 }
