@@ -29,6 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtRPCClient;
+import live.thought.thought4j.ThoughtRPCException;
+import live.thought.thought4j.util.JSON;
 
 @SuppressWarnings("serial")
 public class BlockServlet extends HttpServlet
@@ -49,13 +51,17 @@ public class BlockServlet extends HttpServlet
     String hash = request.getParameter("hash");
     if (null == hash)
     {
-      TemplateRenderer.error500(response, "No Block Hash Specified");
+      TemplateRenderer.error(request, response, "No block hash specified", HttpServletResponse.SC_BAD_REQUEST);
     }
     else
     {
-      Map<String, Object> ctx = renderer.getBaseContext(request);
-      ctx.put("block", client.getBlock(hash));
-      renderer.renderTemplate(response, ctx);
+      Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
+      try {
+        ctx.put("block", client.getBlock(hash));
+        renderer.renderTemplate(response, ctx);
+      } catch (ThoughtRPCException e) {
+        TemplateRenderer.error(request, response, "No such block " + hash, HttpServletResponse.SC_NOT_FOUND);
+      }
     }
   }
 }

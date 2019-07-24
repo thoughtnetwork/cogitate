@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtRPCClient;
+import live.thought.thought4j.ThoughtRPCException;
 
 @SuppressWarnings("serial")
 public class TransactionServlet extends HttpServlet
@@ -49,13 +50,17 @@ public class TransactionServlet extends HttpServlet
     String hash = request.getParameter("hash");
     if (null == hash)
     {
-      TemplateRenderer.error500(response, "No Transaction Hash Specified");
+      TemplateRenderer.error(request, response, "No transaction hash specified", HttpServletResponse.SC_BAD_REQUEST);
     }
     else
     {
-      Map<String, Object> ctx = renderer.getBaseContext(request);
-      ctx.put("tx", client.getRawTransaction(hash));
-      renderer.renderTemplate(response, ctx);
+      Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
+      try {
+        ctx.put("tx", client.getRawTransaction(hash));
+        renderer.renderTemplate(response, ctx);
+      } catch (ThoughtRPCException e) {
+        TemplateRenderer.error(request, response, "No such transaction " + hash, HttpServletResponse.SC_NOT_FOUND);
+      }
     }
   }
 }

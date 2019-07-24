@@ -68,8 +68,7 @@ public class ResourceServlet extends HttpServlet
     }
     catch (Exception e)
     {
-      response.setContentType("text/html");
-      response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      TemplateRenderer.error(request, response, "An unknown error occurred", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       e.printStackTrace(System.err);
     }
   }

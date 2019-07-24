@@ -51,14 +51,14 @@ public class BlockchainInfoServlet extends HttpServlet
     try
     {
       BlockChainInfo bci = client.getBlockChainInfo();
-      Map<String, Object> ctx = renderer.getBaseContext(request);
+      Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       ctx.put("bci", bci);
       ctx.put("verificationProgress", Math.round(bci.verificationProgress() * 100));
       renderer.renderTemplate(response, ctx);
     }
     catch (Exception e)
     {
-      TemplateRenderer.error500(response, "Thought Daemon not responding.");
+      TemplateRenderer.error(request, response, "Thought Daemon not responding", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
   }
 }

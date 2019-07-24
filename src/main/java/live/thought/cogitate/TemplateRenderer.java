@@ -37,6 +37,7 @@ import com.mitchellbosecke.pebble.template.PebbleTemplate;
 public class TemplateRenderer
 {
   private static final PebbleEngine engine;
+  private static final PebbleTemplate errorTemplate;
   private final PebbleTemplate template;
   
   static
@@ -44,6 +45,7 @@ public class TemplateRenderer
     ClasspathLoader loader = new ClasspathLoader(Cogitate.class.getClassLoader());
     loader.setPrefix("templates/");
     engine = new PebbleEngine.Builder().loader(loader).build();
+    errorTemplate = engine.getTemplate("error.html");
   }
 
   public TemplateRenderer(String templateName)
@@ -56,7 +58,7 @@ public class TemplateRenderer
     return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
   }
   
-  public Map<String, Object> getBaseContext(HttpServletRequest request)
+  public static Map<String, Object> getBaseContext(HttpServletRequest request)
   {
     Map<String, Object> ctx = new HashMap<>();
     ctx.put("baseUrl", baseUrl(request));
@@ -72,20 +74,12 @@ public class TemplateRenderer
     template.evaluate(response.getWriter(), ctx);
   }
 
-  public static void error500(HttpServletResponse response, String msg) throws ServletException, IOException
+  public static void error(HttpServletRequest req, HttpServletResponse resp, String msg, int code) throws ServletException, IOException
   {
-    error(response, msg, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-  }
-
-  public static void error404(HttpServletResponse response, String msg) throws ServletException, IOException
-  {
-    error(response, msg, HttpServletResponse.SC_NOT_FOUND);
-  }
-
-  public static void error(HttpServletResponse response, String msg, int code) throws ServletException, IOException
-  {
-    response.setContentType("text/html");
-    response.setStatus(code);
-    response.getWriter().println("<h1>" + Encode.forHtml(msg) + "</h1>");
+    resp.setContentType("text/html");
+    resp.setStatus(code);
+    Map<String, Object> ctx = getBaseContext(req);
+    ctx.put("message", msg);
+    errorTemplate.evaluate(resp.getWriter(), ctx);
   }
 }
