@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtRPCClient;
 import live.thought.thought4j.ThoughtRPCException;
+import live.thought.thought4j.ThoughtClientInterface.Block;
+import live.thought.thought4j.ThoughtClientInterface.RawTransaction;
 
 @SuppressWarnings("serial")
 public class TransactionServlet extends HttpServlet
@@ -57,9 +59,30 @@ public class TransactionServlet extends HttpServlet
       Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       try {
         ctx.put("tx", client.getRawTransaction(hash));
+        response.setHeader("Cache-Control", ResourceServlet.CACHE_CONTROL);
         renderer.renderTemplate(response, ctx);
       } catch (ThoughtRPCException e) {
         TemplateRenderer.error(request, response, "No such transaction " + hash, HttpServletResponse.SC_NOT_FOUND);
+      }
+    }
+  }
+
+  // Transactions do not change once they are on the chain, so they can be cached.
+  @Override
+  protected long getLastModified(HttpServletRequest request) {
+    String hash = request.getParameter("hash");
+    if (null == hash)
+    {
+      return -1;
+    }
+    else
+    {
+      try {
+        RawTransaction tx = client.getRawTransaction(hash);
+        // getLastModified is expected to return milliseconds
+        return tx.time().getTime() * 1000;
+      } catch (ThoughtRPCException e) {
+        return -1;
       }
     }
   }

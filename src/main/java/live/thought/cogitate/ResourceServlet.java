@@ -38,6 +38,10 @@ public class ResourceServlet extends HttpServlet
   private static final String RESOURCE_PATH = "static";
 
   private final long instantiationMilliseconds = Instant.now().getEpochSecond() * 1000;
+  // 86400 seconds = 1 day
+  // This strikes a nice balance between reducing the load on the server and
+  // allowing style updates every so often.
+  public static final String CACHE_CONTROL = "max-age=86400";
 
   static
   {
@@ -58,6 +62,7 @@ public class ResourceServlet extends HttpServlet
       String[] name_parts = pathinfo.split("\\.");
       String resource = RESOURCE_PATH + pathinfo;
       response.setContentType(mimetypes.getOrDefault(name_parts[name_parts.length - 1], "application/octet-stream"));
+      response.setHeader("Cache-Control", CACHE_CONTROL);
       response.setStatus(HttpServletResponse.SC_OK);
       InputStream instream = Cogitate.class.getClassLoader().getResourceAsStream(resource);
       OutputStream os = response.getOutputStream();

@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import live.thought.thought4j.ThoughtClientInterface.Block;
 import live.thought.thought4j.ThoughtRPCClient;
 import live.thought.thought4j.ThoughtRPCException;
 import live.thought.thought4j.util.JSON;
@@ -58,9 +59,30 @@ public class BlockServlet extends HttpServlet
       Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       try {
         ctx.put("block", client.getBlock(hash));
+        response.setHeader("Cache-Control", ResourceServlet.CACHE_CONTROL);
         renderer.renderTemplate(response, ctx);
       } catch (ThoughtRPCException e) {
         TemplateRenderer.error(request, response, "No such block " + hash, HttpServletResponse.SC_NOT_FOUND);
+      }
+    }
+  }
+
+  // Blocks do not change once they are on the chain, so they can be cached.
+  @Override
+  protected long getLastModified(HttpServletRequest request) {
+    String hash = request.getParameter("hash");
+    if (null == hash)
+    {
+      return -1;
+    }
+    else
+    {
+      try {
+        Block b = client.getBlock(hash);
+        // getLastModified is expected to return milliseconds
+        return b.time().getTime() * 1000;
+      } catch (ThoughtRPCException e) {
+        return -1;
       }
     }
   }
