@@ -76,6 +76,8 @@ public class TemplateRenderer
 
   public static void error(HttpServletRequest req, HttpServletResponse resp, String msg, int code) throws ServletException, IOException
   {
+    // Error pages should never be cached.
+    resp.setHeader("Cache-Control", "max-age=0");
     resp.setContentType("text/html");
     resp.setStatus(code);
     Map<String, Object> ctx = getBaseContext(req);

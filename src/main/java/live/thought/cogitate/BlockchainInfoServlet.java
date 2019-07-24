@@ -48,6 +48,9 @@ public class BlockchainInfoServlet extends HttpServlet
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
+    // The blockchain info page should never be cached, as it changes every
+    // time a new block is added to the chain.
+    response.setHeader("Cache-Control", "max-age=0");
     try
     {
       BlockChainInfo bci = client.getBlockChainInfo();
