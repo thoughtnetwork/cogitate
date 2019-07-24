@@ -22,6 +22,7 @@ package live.thought.cogitate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,8 @@ public class ResourceServlet extends HttpServlet
 {
   private static Map<String, String> mimetypes;
   private static final String RESOURCE_PATH = "static";
+
+  private final long instantiationMilliseconds = Instant.now().getEpochSecond() * 1000;
 
   static
   {
@@ -71,5 +74,11 @@ public class ResourceServlet extends HttpServlet
       TemplateRenderer.error(request, response, "An unknown error occurred", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       e.printStackTrace(System.err);
     }
+  }
+
+  // We can safely assume that resources will not be modified for the lifetime of the servlet.
+  @Override
+  protected long getLastModified(HttpServletRequest request) {
+    return instantiationMilliseconds;
   }
 }
