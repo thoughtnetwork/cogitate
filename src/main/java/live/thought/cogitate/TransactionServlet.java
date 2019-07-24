@@ -80,7 +80,7 @@ public class TransactionServlet extends HttpServlet
       try {
         RawTransaction tx = client.getRawTransaction(hash);
         // getLastModified is expected to return milliseconds
-        return tx.time().getTime() * 1000;
+        return tx.time().getTime();
       } catch (ThoughtRPCException e) {
         return -1;
       }

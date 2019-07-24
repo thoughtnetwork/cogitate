@@ -80,7 +80,7 @@ public class BlockServlet extends HttpServlet
       try {
         Block b = client.getBlock(hash);
         // getLastModified is expected to return milliseconds
-        return b.time().getTime() * 1000;
+        return b.time().getTime();
       } catch (ThoughtRPCException e) {
         return -1;
       }

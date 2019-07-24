@@ -22,7 +22,7 @@ package live.thought.cogitate;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.time.Instant;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +37,8 @@ public class ResourceServlet extends HttpServlet
   private static Map<String, String> mimetypes;
   private static final String RESOURCE_PATH = "static";
 
-  private final long instantiationMilliseconds = Instant.now().getEpochSecond() * 1000;
+  private final long instantiationMilliseconds = new Date().getTime();
+
   // 86400 seconds = 1 day
   // This strikes a nice balance between reducing the load on the server and
   // allowing style updates every so often.
