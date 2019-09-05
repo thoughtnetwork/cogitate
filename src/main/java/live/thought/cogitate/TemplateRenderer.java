@@ -44,7 +44,7 @@ public class TemplateRenderer
   {
     ClasspathLoader loader = new ClasspathLoader(Cogitate.class.getClassLoader());
     loader.setPrefix("templates/");
-    engine = new PebbleEngine.Builder().loader(loader).build();
+    engine = new PebbleEngine.Builder().loader(loader).strictVariables(true).build();
     errorTemplate = engine.getTemplate("error.html");
   }
 
