@@ -1,6 +1,6 @@
 {% extends '_base.html' %}
 {% block content %}
-<h1>Transaction {{ tx.txId }}</h1>
+<h1>Transaction <code>{{ tx.txId }}</code></h1>
 <table>
   <tr>
     <td>Version</td>
@@ -17,7 +17,9 @@
   <tr>
     {% set blockhash = tx.blockHash %}
     <td>Block Hash</td>
-    <td><a href="{{ baseUrl }}/getblock?hash={{ blockhash }}">{{ blockhash }}</a></td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ blockhash }}">
+      <code>{{ blockhash }}</code>
+    </a></td>
   </tr>
   <tr>
     <td>Size</td>
@@ -54,7 +56,9 @@
       {% set txid = output.transaction.txId %}
       <tr>
         <td>{{ input.sequence }}</td>
-        <td><a href="{{ baseUrl }}/gettransaction?hash={{ txid }}">{{ txid }}</td>
+        <td><a href="{{ baseUrl }}/gettransaction?hash={{ txid }}">
+          <code>{{ txid }}</code>
+        </td>
         <td>{{ output.value }}</td>
       </tr>
     {% endif %}
@@ -77,11 +81,11 @@
         {% set addresses = pubkey.addresses %}
         {% if addresses is not empty %}
           {% for address in addresses %}
-            {{ address }}
+            <code>{{ address }}</code>
             {% if not loop.first %}<br>{% endif %}
           {% endfor %}
         {% else %}
-          {{ pubkey.hex }}
+          <code>{{ pubkey.hex }}</code>
         {% endif %}
       </td>
       <td>{{ output.value }}</td>

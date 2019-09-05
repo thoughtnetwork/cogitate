@@ -3,7 +3,7 @@
 {% set prevhash = block.previousHash %}
 {% set nexthash = block.nextHash %}
 {% set txns = block.tx %}
-<h1>Block #{{ block.height }} ({{ block.hash }})</h1>
+<h1>Block #{{ block.height }} (<code>{{ block.hash }}</code>)</h1>
 <table>
   <tr>
     <td>Confirmations</td>
@@ -24,20 +24,26 @@
   {% if prevhash is not empty %}
   <tr>
     <td>Previous block</td>
-    <td><a href="{{ baseUrl }}/getblock?hash={{ prevhash }}">{{ prevhash }}</a></td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ prevhash }}">
+      <code>{{ prevhash }}</code>
+    </a></td>
   </tr>
   {% endif %}
   {% if nexthash is not empty %}
   <tr>
     <td>Next block</td>
-    <td><a href="{{ baseUrl }}/getblock?hash={{ nexthash }}">{{ nexthash }}</a></td>
+    <td><a href="{{ baseUrl }}/getblock?hash={{ nexthash }}">
+      <code>{{ nexthash }}</code>
+    </a></td>
   </tr>
   {% endif %}
 </table>
 <h3>Transactions</h3>
 {% if txns is not empty %}
   {% for tx in txns %}
-    <a href="{{ baseUrl }}/gettransaction?hash={{ tx }}">{{ tx }}</a><br>
+    <a href="{{ baseUrl }}/gettransaction?hash={{ tx }}">
+      <code>{{ tx }}</code>
+    </a><br>
   {% endfor %}
 {% else %}
   No transactions.
