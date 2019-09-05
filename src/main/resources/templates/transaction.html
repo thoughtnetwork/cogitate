@@ -51,9 +51,10 @@
         {% set header = true %}
       {% endif %}
       {% set output = input.transactionOutput %}
+      {% set txid = output.transaction.txId %}
       <tr>
         <td>{{ input.sequence }}</td>
-        <td>{{ output.transaction.hash }}</td>
+        <td><a href="{{ baseUrl }}/gettransaction?hash={{ txid }}">{{ txid }}</td>
         <td>{{ output.value }}</td>
       </tr>
     {% endif %}
