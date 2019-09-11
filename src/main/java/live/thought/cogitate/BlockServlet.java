@@ -20,6 +20,7 @@
 package live.thought.cogitate;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.Map;
 
@@ -31,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import live.thought.thought4j.ThoughtClientInterface.Block;
 import live.thought.thought4j.ThoughtRPCClient;
 import live.thought.thought4j.ThoughtRPCException;
-import live.thought.thought4j.util.JSON;
 
 @SuppressWarnings("serial")
 public class BlockServlet extends HttpServlet
@@ -50,19 +50,25 @@ public class BlockServlet extends HttpServlet
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
     String hash = request.getParameter("hash");
-    if (null == hash)
+    String height = request.getParameter("height");
+    if (null == hash && null == height)
     {
-      TemplateRenderer.error(request, response, "No block hash specified", HttpServletResponse.SC_BAD_REQUEST);
+      TemplateRenderer.error(request, response, "No block specified", HttpServletResponse.SC_BAD_REQUEST);
     }
     else
     {
       Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       try {
+        if (null != height) {
+          hash = client.getBlockHash(Integer.parseInt(height, 10));
+        }
         ctx.put("block", client.getBlock(hash));
         response.setHeader("Cache-Control", ResourceServlet.CACHE_CONTROL);
         renderer.renderTemplate(response, ctx);
       } catch (ThoughtRPCException e) {
-        TemplateRenderer.error(request, response, "No such block " + hash, HttpServletResponse.SC_NOT_FOUND);
+        TemplateRenderer.error(request, response, "No such block", HttpServletResponse.SC_NOT_FOUND);
+      } catch (NumberFormatException e) {
+        TemplateRenderer.error(request, response, "Invalid block height", HttpServletResponse.SC_BAD_REQUEST);
       }
     }
   }

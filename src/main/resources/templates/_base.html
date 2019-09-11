@@ -25,13 +25,17 @@
             <ul>
               <li>Block<br>
                 <form action="{{ baseUrl }}/getblock" method="GET">
-                  <input type="text" placeholder="Block hash" name="hash">
+                  <input type="text" placeholder="Block hash" name="hash" required>
+                  <input type="submit" value="Go">
+                </form>
+                <form action="{{ baseUrl }}/getblock" method="GET">
+                  <input type="number" placeholder="Block height" name="height" min="0" step="1" required>
                   <input type="submit" value="Go">
                 </form>
               </li>
               <li>Transaction<br>
                 <form action="{{ baseUrl }}/gettransaction" method="GET">
-                  <input type="text" placeholder="Transaction hash" name="hash">
+                  <input type="text" placeholder="Transaction hash" name="hash" required>
                   <input type="submit" value="Go">
                 </form>
               </li>
