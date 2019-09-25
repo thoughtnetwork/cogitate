@@ -1,8 +1,22 @@
 {% extends '_base.html' %}
-{% block content %}
+{% set getblock = baseUrl + "/getblock?hash=" %}
+{% set link = getblock + block.hash %}
 {% set prevhash = block.previousHash %}
+{% set prevlink = getblock + prevhash %}
 {% set nexthash = block.nextHash %}
+{% set nextlink = getblock + nexthash %}
 {% set txns = block.tx %}
+{% block head %}
+  {{ parent() }}
+  <link rel="canonical" href="{{ link }}">
+  {% if prevhash is not empty %}
+    <link rel="prev" href="{{ prevlink }}">
+  {% endif %}
+  {% if nexthash is not empty %}
+    <link rel="next" href="{{ nextlink }}">
+  {% endif %}
+{% endblock %}
+{% block content %}
 <h1>Block #{{ block.height }} (<code>{{ block.hash }}</code>)</h1>
 <table>
   <tr>
@@ -24,7 +38,7 @@
   {% if prevhash is not empty %}
   <tr>
     <td>Previous block</td>
-    <td><a href="{{ baseUrl }}/getblock?hash={{ prevhash }}">
+    <td><a href="{{ prevlink }}">
       <code>{{ prevhash }}</code>
     </a></td>
   </tr>
@@ -32,7 +46,7 @@
   {% if nexthash is not empty %}
   <tr>
     <td>Next block</td>
-    <td><a href="{{ baseUrl }}/getblock?hash={{ nexthash }}">
+    <td><a href="{{ nextlink }}">
       <code>{{ nexthash }}</code>
     </a></td>
   </tr>
