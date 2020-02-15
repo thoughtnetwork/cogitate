@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtRPCClient;
 import live.thought.thought4j.ThoughtRPCException;
-import live.thought.thought4j.ThoughtClientInterface.Block;
-import live.thought.thought4j.ThoughtClientInterface.RawTransaction;
 
 @SuppressWarnings("serial")
 public class TransactionServlet extends HttpServlet
@@ -50,39 +48,29 @@ public class TransactionServlet extends HttpServlet
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
     String hash = request.getParameter("hash");
+
     if (null == hash)
     {
       TemplateRenderer.error(request, response, "No transaction hash specified", HttpServletResponse.SC_BAD_REQUEST);
     }
     else
     {
-      Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
-      try {
-        ctx.put("tx", client.getRawTransaction(hash));
-        response.setHeader("Cache-Control", ResourceServlet.CACHE_CONTROL);
-        renderer.renderTemplate(response, ctx);
-      } catch (ThoughtRPCException e) {
-        TemplateRenderer.error(request, response, "No such transaction " + hash, HttpServletResponse.SC_NOT_FOUND);
+      if (hash.equals(request.getHeader("If-None-Match")))
+      {
+        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        return;
       }
-    }
-  }
 
-  // Transactions do not change once they are on the chain, so they can be cached.
-  @Override
-  protected long getLastModified(HttpServletRequest request) {
-    String hash = request.getParameter("hash");
-    if (null == hash)
-    {
-      return -1;
-    }
-    else
-    {
-      try {
-        RawTransaction tx = client.getRawTransaction(hash);
-        // getLastModified is expected to return milliseconds
-        return tx.time().getTime();
-      } catch (ThoughtRPCException e) {
-        return -1;
+      Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
+      try
+      {
+        ctx.put("tx", client.getRawTransaction(hash));
+        response.setHeader("ETag", hash);
+        renderer.renderTemplate(response, ctx);
+      }
+      catch (ThoughtRPCException e)
+      {
+        TemplateRenderer.error(request, response, "No such transaction " + hash, HttpServletResponse.SC_NOT_FOUND);
       }
     }
   }

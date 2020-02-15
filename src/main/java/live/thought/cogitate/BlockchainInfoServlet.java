@@ -48,12 +48,19 @@ public class BlockchainInfoServlet extends HttpServlet
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
   {
-    // The blockchain info page should never be cached, as it changes every
-    // time a new block is added to the chain.
-    response.setHeader("Cache-Control", "max-age=0");
+
     try
     {
       BlockChainInfo bci = client.getBlockChainInfo();
+
+      if (bci.bestBlockHash().equals(request.getHeader("If-None-Match")))
+      {
+        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        return;
+      }
+
+      response.setHeader("ETag", bci.bestBlockHash());
+      response.setHeader("Cache-Control", "max-age=60");
       Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       ctx.put("bci", bci);
       ctx.put("verificationProgress", Math.round(bci.verificationProgress() * 100));
@@ -61,7 +68,8 @@ public class BlockchainInfoServlet extends HttpServlet
     }
     catch (Exception e)
     {
-      TemplateRenderer.error(request, response, "Thought Daemon not responding", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      TemplateRenderer.error(request, response, "Thought Daemon not responding",
+          HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
   }
 }

@@ -39,7 +39,7 @@ public class TemplateRenderer
   private static final PebbleEngine engine;
   private static final PebbleTemplate errorTemplate;
   private final PebbleTemplate template;
-  
+
   static
   {
     ClasspathLoader loader = new ClasspathLoader(Cogitate.class.getClassLoader());

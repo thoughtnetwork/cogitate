@@ -21,8 +21,7 @@ package live.thought.cogitate;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Date;
+import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,15 +33,22 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings("serial")
 public class ResourceServlet extends HttpServlet
 {
+  private class ResourceInfo
+  {
+    public final String etag;
+    public final long length;
+
+    public ResourceInfo(String etag, long length)
+    {
+      this.etag = etag;
+      this.length = length;
+    }
+  }
+
   private static Map<String, String> mimetypes;
+  private static Map<String, ResourceInfo> resourceInfo;
   private static final String RESOURCE_PATH = "static";
-
-  private final long instantiationMilliseconds = new Date().getTime();
-
-  // 86400 seconds = 1 day
-  // This strikes a nice balance between reducing the load on the server and
-  // allowing style updates every so often.
-  public static final String CACHE_CONTROL = "max-age=86400";
+  private static final ClassLoader loader = Cogitate.class.getClassLoader();
 
   static
   {
@@ -52,6 +58,8 @@ public class ResourceServlet extends HttpServlet
     mimetypes.put("jpg", "image/jpeg");
     mimetypes.put("css", "text/css");
     mimetypes.put("js", "application/javascript");
+
+    resourceInfo = new HashMap<>();
   }
 
   @Override
@@ -62,29 +70,41 @@ public class ResourceServlet extends HttpServlet
       String pathinfo = request.getPathInfo();
       String[] name_parts = pathinfo.split("\\.");
       String resource = RESOURCE_PATH + pathinfo;
-      response.setContentType(mimetypes.getOrDefault(name_parts[name_parts.length - 1], "application/octet-stream"));
-      response.setHeader("Cache-Control", CACHE_CONTROL);
-      response.setStatus(HttpServletResponse.SC_OK);
-      InputStream instream = Cogitate.class.getClassLoader().getResourceAsStream(resource);
-      OutputStream os = response.getOutputStream();
-      int b = instream.read();
-      while (b != -1)
+
+      InputStream stream = loader.getResourceAsStream(resource);
+
+      if (stream == null)
       {
-        os.write(b);
-        b = instream.read();
+        TemplateRenderer.error(request, response, "Resource not found", HttpServletResponse.SC_NOT_FOUND);
+        return;
       }
-      instream.close();
+
+      ResourceInfo info = resourceInfo.getOrDefault(resource, null);
+
+      if (info == null)
+      {
+        MessageDigest digest = MessageDigest.getInstance("md5");
+        long length = Util.BlockCopy(stream, (block, size) -> digest.update(block, 0, size));
+        info = new ResourceInfo(Util.HexDigest(digest), length);
+      }
+      response.addHeader("ETag", info.etag);
+
+      if (info.etag.equals(request.getHeader("If-None-Match")))
+      {
+        response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+        return;
+      }
+
+      response.setContentLengthLong(info.length);
+      response.setStatus(HttpServletResponse.SC_OK);
+      response.setContentType(mimetypes.getOrDefault(name_parts[name_parts.length - 1], "application/octet-stream"));
+      Util.CopyStream(loader.getResourceAsStream(resource), response.getOutputStream());
     }
     catch (Exception e)
     {
-      TemplateRenderer.error(request, response, "An unknown error occurred", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+      TemplateRenderer.error(request, response, "An unknown error occurred",
+          HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
       e.printStackTrace(System.err);
     }
-  }
-
-  // We can safely assume that resources will not be modified for the lifetime of the servlet.
-  @Override
-  protected long getLastModified(HttpServletRequest request) {
-    return instantiationMilliseconds;
   }
 }
