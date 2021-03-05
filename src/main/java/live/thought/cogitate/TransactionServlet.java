@@ -21,6 +21,7 @@ package live.thought.cogitate;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -28,6 +29,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import live.thought.thought4j.ThoughtClientInterface.RawTransaction;
+import live.thought.thought4j.ThoughtClientInterface.RawTransaction.In;
 import live.thought.thought4j.ThoughtRPCClient;
 import live.thought.thought4j.ThoughtRPCException;
 
@@ -64,7 +67,23 @@ public class TransactionServlet extends HttpServlet
       Map<String, Object> ctx = TemplateRenderer.getBaseContext(request);
       try
       {
-        ctx.put("tx", client.getRawTransaction(hash));
+        RawTransaction rtx = client.getRawTransaction(hash);
+        ctx.put("tx", rtx);
+        List<In> inputs = rtx.vIn();
+        String cbd = "";
+        for (In in : inputs)
+        {
+          if (in.isCoinbase())
+          {
+            String coinbase = in.coinbase();
+            if (coinbase.length() > 8)
+            {
+              cbd = new String(Util.hexStringToByteArray(coinbase.substring(8)));
+            }
+            break;
+          }
+        }
+        ctx.put("cbd", cbd);
         response.setHeader("ETag", hash);
         renderer.renderTemplate(response, ctx);
       }

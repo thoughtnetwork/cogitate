@@ -39,9 +39,9 @@
 <table>
   {% set header = false %}
   {% for input in tx.vIn %}
-    {% if input.coinbase %}
+    {% if input.isCoinbase %}
       <tr>
-        <td colspan="3">Coinbase</td>
+        <td colspan="3">Coinbase&nbsp;{{ cbd }}</td>
       </tr>
     {% else %}
       {% if not header %}
