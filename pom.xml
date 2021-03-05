@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>live.thought</groupId>
 	<artifactId>cogitate</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>Cogitate</name>
 	<description>Blockchain Browser Servlet for Thought Network</description>
 	<dependencies>
@@ -21,7 +21,7 @@
 		<dependency>
 			<groupId>live.thought</groupId>
 			<artifactId>thought4j</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.3.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
