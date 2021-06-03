@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>live.thought</groupId>
 	<artifactId>cogitate</artifactId>
-	<version>0.1-SNAPSHOT</version>
+	<version>0.2-SNAPSHOT</version>
 	<name>Cogitate</name>
 	<description>Blockchain Browser Servlet for Thought Network</description>
 	<dependencies>
@@ -31,12 +31,12 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-webapp</artifactId>
-			<version>9.4.34.v20201102</version>
+			<version>9.4.38.v20210224</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.4.12.v20180830</version>
+			<version>9.4.38.v20210224</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
