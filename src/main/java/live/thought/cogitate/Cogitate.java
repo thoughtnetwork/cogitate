@@ -55,6 +55,7 @@ public class Cogitate
   private static final String              DEFAULT_PASS        = "pass";
   private static final String              DEFAULT_SERVER_HOST = "0.0.0.0";
   private static final String              DEFAULT_SERVER_PORT = "3141";
+  
   /** Configuration options. **/
   private static final String              RPC_HOST            = "rpc.host";
   private static final String              RPC_PORT            = "rpc.port";
@@ -62,6 +63,9 @@ public class Cogitate
   private static final String              RPC_PASS            = "rpc.pass";
   private static final String              SERVER_HOST         = "server.host";
   private static final String              SERVER_PORT         = "server.port";
+  private static final String              COIN_PREMINE        = "coininfo.premine";
+  private static final String              COIN_BURNED         = "coininfo.burned";
+  private static final String              COIN_LOCKED         = "coininfo.locked";
 
   /** Logging **/
   private static final Logger              LOG;
@@ -74,6 +78,10 @@ public class Cogitate
   protected int                            rpcPort;
   protected String                         rpcUser;
   protected String                         rpcPass;
+  
+  protected double coinPremine;
+  protected double coinBurned;
+  protected double coinLocked;
 
   /** Single instance */
   private static Cogitate                  instance;
@@ -120,7 +128,10 @@ public class Cogitate
       rpcPass = props.getProperty(RPC_PASS, DEFAULT_PASS);
       serverHost = props.getProperty(SERVER_HOST, DEFAULT_SERVER_HOST);
       serverPort = Integer.parseInt(props.getProperty(SERVER_PORT, DEFAULT_SERVER_PORT));
-
+      
+      coinPremine = Double.parseDouble(props.getProperty(COIN_PREMINE, "0.0"));
+      coinBurned = Double.parseDouble(props.getProperty(COIN_BURNED, "0.0"));
+      coinLocked = Double.parseDouble(props.getProperty(COIN_LOCKED, "0.0"));      
     }
   }
 
@@ -128,7 +139,8 @@ public class Cogitate
   {
     Server server = new Server(new InetSocketAddress(serverHost, serverPort));
     ServletHandler handler = new ServletHandler();
-    server.setHandler(handler);
+    server.setHandler(handler);   
+    handler.addServletWithMapping(CoinServlet.class, "/coin");
     handler.addServletWithMapping(BlockServlet.class, "/getblock");
     handler.addServletWithMapping(TransactionServlet.class, "/gettransaction");
     handler.addServletWithMapping(ResourceServlet.class, "/resources/*");
@@ -209,6 +221,36 @@ public class Cogitate
   public void setRpcPass(String rpcPass)
   {
     this.rpcPass = rpcPass;
+  }
+
+  public double getCoinPremine()
+  {
+    return coinPremine;
+  }
+
+  public void setCoinPremine(double coinPremine)
+  {
+    this.coinPremine = coinPremine;
+  }
+
+  public double getCoinBurned()
+  {
+    return coinBurned;
+  }
+
+  public void setCoinBurned(double coinBurned)
+  {
+    this.coinBurned = coinBurned;
+  }
+
+  public double getCoinLocked()
+  {
+    return coinLocked;
+  }
+
+  public void setCoinLocked(double coinLocked)
+  {
+    this.coinLocked = coinLocked;
   }
 
   public URL getThoughtURL()
@@ -292,6 +334,5 @@ public class Cogitate
     {
       e.printStackTrace(System.err);
     }
-
   }
 }
