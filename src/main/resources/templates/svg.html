@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  {% block head %}
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>{% block title %}THT Coin Distribution{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+  <style>
+  body {
+    width: 100%;
+    height: 100%;
+    background: #0E1821;
+}
+ 
+.chart-container{
+    padding:15px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+    font-size: 1.2em;
+}
+
+#maxarrow {
+                stroke: #ffffff;
+                fill: #ffffff;
+            }
+#circarrow {
+                stroke: #64c4d0;
+                fill: #64c4d0;
+            }
+#supplyarrow {
+                stroke: #5fe3ae;
+                fill: #5fe3ae;
+            }
+  </style>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  {% endblock %}
+</head>
+<body>
+	<div id="chart" class="chart-container">
+	  <svg width="460" height="280"> 
+	    <defs>
+          <marker id="maxarrow"
+                  viewBox="0 0 10 10" refX="0" refY="5" 
+                  markerUnits="strokeWidth"
+                  markerWidth="4" markerHeight="3"
+                  orient="auto" overflow="visible">
+             <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+          <marker id="supplyarrow"
+                  viewBox="0 0 10 10" refX="0" refY="5" 
+                  markerUnits="strokeWidth"
+                  markerWidth="4" markerHeight="3"
+                  orient="auto" overflow="visible">
+             <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+          <marker id="circarrow"
+                  viewBox="0 0 10 10" refX="0" refY="5" 
+                  markerUnits="strokeWidth"
+                  markerWidth="4" markerHeight="3"
+                  orient="auto" overflow="visible">
+             <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+        </defs>
+	  </svg>
+	  <script>
+          // Data from servlet
+	      var dataset = {{ dataset | raw }};
+	      var legendset = {{ legendset | raw }};
+          var max = {{ max }};
+          var circulating = {{ circulating }};
+          var supply = {{ supply }};
+          var color = d3.scaleOrdinal(['#5fe3ae','#64c4d0','#c5d0d9']);
+          var legendcolor = d3.scaleOrdinal(['#64c4d0','#5fe3ae','#c5d0d9']);
+          var step = 24;
+          
+          var svg = d3.select("svg"),
+                       width = svg.attr("width"),
+                       height = svg.attr("height"),
+                       radius = Math.min(width, height) / 3 - step,
+          g = svg.append("g").attr("transform", "translate(" + (width / 3) + "," + (height / 2) + ")");
+          
+          var legendG = svg.selectAll(".legend")
+                           .data(legendset)
+                           .enter().append("g")
+                           .attr("transform", function(d,i){
+                                                return "translate(" + (width * 0.65) +  "," + ((height/3) + (i * 20) + 20) + ")";
+                                              })
+                           .attr("class", "legend");   
+
+          legendG.append("rect")
+                 .attr("width", 12)
+                 .attr("height", 12)
+                 .attr("fill", function(d, i) {
+                                 return legendcolor(i);
+                               });
+
+          legendG.append("text")
+                 .text(function(d){
+                         return d.name + ": " + d.percent + "%";
+                       })
+                 .style("font-size", 14)
+                 .attr("fill", function(d, i) {
+                                 return legendcolor(i);
+                               })
+                 .attr("y", 12)
+                 .attr("x", 14);         
+          
+          var pie=d3.pie()
+                    .value(function(d){return d.percent})
+                    .sort(null);
+
+          var circRadius = radius + 10;
+          var supplyRadius = circRadius + step;
+          var maxRadius = supplyRadius + step;
+          var arcStart = (Math.PI * 1.5) - (Math.PI * 0.072);
+          var circSize = ((Math.PI * 2) * (circulating/max)) + (Math.PI * 0.0175);
+          var circEnd = arcStart + circSize; 
+          var supplySize = (Math.PI * 2) * (supply/max);
+          var supplyEnd = arcStart + supplySize;
+          var maxEnd = arcStart + (Math.PI * 2) - (Math.PI * 2 * 0.0275);
+          
+        	  
+          // Generate the arcs
+          var arc = d3.arc()
+                      .innerRadius(0)
+                      .outerRadius(radius);
+
+          //Generate groups
+          var arcs = g.selectAll("arc")
+                      .data(pie(dataset))
+                      .enter()
+                      .append("g")
+                      .attr("class", "arc");
+
+          //Draw arc paths
+          arcs.append("path")
+              .attr("stroke", "white")
+              .attr("stroke-width", "3")
+              .attr("fill", function(d, i) {
+                              return color(i);
+                            })
+              .attr("d", arc);
+                    
+          // Draw circulating arc
+          var circArc = d3.arc()
+                          .innerRadius(circRadius)
+                          .outerRadius(circRadius)
+                          .startAngle(arcStart)
+                          .endAngle(circEnd);
+          
+          var firstCircArcSection = /(^.+?A.+?)A/;
+          var newCircArc = firstCircArcSection.exec( circArc() )[1];
+          newCircArc = newCircArc.replace(/,/g , " ");
+          
+          g.append("path")
+            .attr("id", "circ")
+            .attr("class", "circArc")
+            .attr("d", newCircArc)
+            .attr("stroke", color(1))
+            .attr("stroke-width", "4")
+            .attr("fill", "none")
+           .attr("marker-end", "url(#circarrow)");
+          
+            g.append("text")
+            .attr("class", "circText")
+            .attr("x", 1)
+            .attr("dy", -6)
+            .append("textPath") //append a textPath to the text element
+            .attr("xlink:href", "#circ") //place the ID of the path here
+            .style("font-size", 10)
+            .style("fill", color(1))
+            .text("Circulating Supply: " + (circulating/1000000).toFixed(2) + "M");
+          
+          // Draw supply arc
+          var supplyArc = d3.arc()
+                           .innerRadius(supplyRadius)
+                           .outerRadius(supplyRadius)
+                           .startAngle(arcStart)
+                           .endAngle(supplyEnd);
+          
+          var firstSupplyArcSection = /(^.+?A.+?)A/;
+          var newSupplyArc = firstSupplyArcSection.exec( supplyArc() )[1];
+          newSupplyArc = newSupplyArc.replace(/,/g , " ");
+
+          g.append("path")
+           .attr("id", "supply")
+           .attr("class", "supplyArc")
+           .attr("d", newSupplyArc)
+           .attr("stroke", color(0))
+           .attr("stroke-width", "4")
+           .attr("fill", "none")
+           .attr("marker-end", "url(#supplyarrow)");
+
+          g.append("text")
+           .attr("class", "supplyText")
+           .attr("x", 85)
+           .attr("dy", -6)
+           .append("textPath") //append a textPath to the text element
+           .attr("xlink:href", "#supply") //place the ID of the path here
+           .style("font-size", 10)
+           .style("fill", color(0))
+           .text("Total Supply: " + (supply/1000000).toFixed(2) + "M");
+          
+          
+          // Draw max arc
+          var maxArc = d3.arc()
+                           .innerRadius(maxRadius)
+                           .outerRadius(maxRadius)
+                           .startAngle(arcStart)
+                           .endAngle(maxEnd);
+          
+          var firstMaxArcSection = /(^.+?A.+?)A/;
+          var newMaxArc = firstMaxArcSection.exec( maxArc() )[1];
+          newMaxArc = newMaxArc.replace(/,/g , " ");
+
+          g.append("path")
+           .attr("id", "max")
+           .attr("class", "maxArc")
+           .attr("d", newMaxArc)
+           .attr("stroke", "white")
+           .attr("stroke-width", "4")
+           .attr("fill", "none")
+           .attr("marker-end", "url(#maxarrow)");
+
+          g.append("text")
+           .attr("class", "maxText")
+           .attr("x", 185)
+           .attr("dy", -6)
+           .append("textPath") //append a textPath to the text element
+           .attr("xlink:href", "#max") //place the ID of the path here
+           .style("font-size", 10)
+           .style("fill", "white")
+           .text("Max Supply: " + (max/1000000).toFixed(0) + "M");
+                    
+        </script>
+    </div>
+</body>
+</html>

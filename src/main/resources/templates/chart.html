@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  {% block head %}
+  <meta charset='utf-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1'>
+  <title>{% block title %}THT Coin Distribution{% endblock %}</title>
+  <link
+	href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.css"
+	rel="stylesheet">
+  <link href='https://fonts.googleapis.com/css?family=Roboto:400,700,500'
+	rel='stylesheet' type='text/css'>
+  <style>
+  body {
+    background-color: #ccc;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+    height: 100%;
+}
+ 
+.widget {
+    margin: 0 auto;
+    width:500px;
+    background-color:#fff;
+    border-radius: 5px;
+    box-shadow: 1px 1px 4px 0px rgba(0,0,0,0.3);
+ 
+}
+ 
+.header{
+    background-color: #eee;
+    height:60px;
+    color:#555;
+    text-align: center;
+    line-height: 60px;
+    border-top-left-radius: 7px;
+    border-top-right-radius: 7px;
+    font-weight: 400;
+    font-size: 2.3em;
+    text-shadow: 2px 2px #fff;
+    border-bottom: 1px solid #eaeaea;
+}
+ 
+.chart-container{
+    padding:15px;
+    font-weight: 300;
+    font-size: 1.2em;
+}
+
+.footer{
+    background-color: #eee;
+    height:30px;
+    color:#555;
+    text-align: center;
+    line-height: 24px;
+    border-bottom-left-radius: 7px;
+    border-bottom-right-radius: 7px;
+    font-weight: 300;
+    font-size: 1.25em;
+    text-shadow: 2px 2px #fff;
+    border-top: 1px solid #eaeaea;
+}
+  </style>
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  {% endblock %}
+</head>
+<body>
+	<div class="widget">
+		<div class="header">THT Coin Distribution</div>
+		<div id="chart" class="chart-container">
+		  <svg width="460" height="280"> </svg>
+		  <script>
+            var dataset = {{ dataset | raw }};
+            var pie=d3.pie()
+                      .value(function(d){return d.percent})
+                      .sort(null);
+
+            var svg = d3.select("svg"),
+                      width = svg.attr("width"),
+                      height = svg.attr("height"),
+                      radius = Math.min(width, height) / 2 - 30,
+                      g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+ 
+            var color = d3.scaleOrdinal(['#5fe3ae','#c5d0d9','#64c4d0']);
+
+            // Generate the arcs
+            var arc = d3.arc()
+                        .innerRadius(0)
+                        .outerRadius(radius);
+
+            //Generate groups
+            var arcs = g.selectAll("arc")
+                        .data(pie(dataset))
+                        .enter()
+                        .append("g")
+                        .attr("class", "arc")
+
+            //Draw arc paths
+            arcs.append("path")
+                .attr("fill", function(d, i) {
+                                return color(i);
+                              })
+                .attr("d", arc);
+            
+            var text=g.selectAll('text')
+        	            .data(pie(dataset))
+        	            .enter()
+        	            .append("text")
+        	            .attr("transform", function (d) {
+        		                              return "translate(" + arc.centroid(d) + ")";
+        	                               })
+        	            .attr("text-anchor", "middle")
+        	            .text(function(d){
+        		                 return d.data.name + " (" + d.data.percent + "%)";
+        	                  })
+        	            .style({
+        		           fill:function(d,i){
+        			              return color(i);
+        		           },
+        		            'font-size':'14px',
+        	            });
+            
+            var legendG = svg.selectAll(".legend")
+                             .data(pie(dataset))
+                             .enter().append("g")
+                             .attr("transform", function(d,i){
+                                                  return "translate(0," + (i * 20) + ")";
+                                                })
+                             .attr("class", "legend");   
+          
+            legendG.append("rect")
+                   .attr("width", 12)
+                   .attr("height", 12)
+                   .attr("fill", function(d, i) {
+                                   return color(i);
+                                 });
+          
+            legendG.append("text")
+                   .text(function(d){
+                           return d.data.name + ": " + d.data.millions + "M";
+                         })
+                   .style("font-size", 14)
+                   .attr("y", 12)
+                   .attr("x", 14);
+          </script>
+		</div>
+  	    <div class = "footer">
+	      <center>
+		    <p>Copyright &copy; 2017-{{ copyrightYear }} Thought Networks LLC</p>
+	      </center>
+	    </div>
+	</div>
+</body>
+</html>
