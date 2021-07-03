@@ -68,12 +68,10 @@
 	  <script>
           // Data from servlet
 	      var dataset = {{ dataset | raw }};
-	      var legendset = {{ legendset | raw }};
           var max = {{ max }};
           var circulating = {{ circulating }};
           var supply = {{ supply }};
-          var color = d3.scaleOrdinal(['#5fe3ae','#64c4d0','#c5d0d9']);
-          var legendcolor = d3.scaleOrdinal(['#64c4d0','#5fe3ae','#c5d0d9']);
+          var color = d3.scaleOrdinal(['#64c4d0','#5fe3ae','#c5d0d9']);
           var step = 24;
           
           var svg = d3.select("svg"),
@@ -83,7 +81,7 @@
           g = svg.append("g").attr("transform", "translate(" + (width / 3) + "," + (height / 2) + ")");
           
           var legendG = svg.selectAll(".legend")
-                           .data(legendset)
+                           .data(dataset)
                            .enter().append("g")
                            .attr("transform", function(d,i){
                                                 return "translate(" + (width * 0.65) +  "," + ((height/3) + (i * 20) + 20) + ")";
@@ -94,7 +92,7 @@
                  .attr("width", 12)
                  .attr("height", 12)
                  .attr("fill", function(d, i) {
-                                 return legendcolor(i);
+                                 return color(i);
                                });
 
           legendG.append("text")
@@ -103,14 +101,12 @@
                        })
                  .style("font-size", 14)
                  .attr("fill", function(d, i) {
-                                 return legendcolor(i);
+                                 return color(i);
                                })
                  .attr("y", 12)
                  .attr("x", 14);         
           
-          var pie=d3.pie()
-                    .value(function(d){return d.percent})
-                    .sort(null);
+          
 
           var circRadius = radius + 10;
           var supplyRadius = circRadius + step;
@@ -121,6 +117,12 @@
           var supplySize = (Math.PI * 2) * (supply/max);
           var supplyEnd = arcStart + supplySize;
           var maxEnd = arcStart + (Math.PI * 2) - (Math.PI * 2 * 0.0275);
+          
+          var pie=d3.pie()
+          .startAngle(arcStart)
+          .endAngle(arcStart + 2 * Math.PI)
+          .value(function(d){return d.percent})
+          .sort(null);
           
         	  
           // Generate the arcs
@@ -159,7 +161,7 @@
             .attr("id", "circ")
             .attr("class", "circArc")
             .attr("d", newCircArc)
-            .attr("stroke", color(1))
+            .attr("stroke", color(0))
             .attr("stroke-width", "4")
             .attr("fill", "none")
            .attr("marker-end", "url(#circarrow)");
@@ -171,7 +173,7 @@
             .append("textPath") //append a textPath to the text element
             .attr("xlink:href", "#circ") //place the ID of the path here
             .style("font-size", 10)
-            .style("fill", color(1))
+            .style("fill", color(0))
             .text("Circulating Supply: " + (circulating/1000000).toFixed(2) + "M");
           
           // Draw supply arc
@@ -189,7 +191,7 @@
            .attr("id", "supply")
            .attr("class", "supplyArc")
            .attr("d", newSupplyArc)
-           .attr("stroke", color(0))
+           .attr("stroke", color(1))
            .attr("stroke-width", "4")
            .attr("fill", "none")
            .attr("marker-end", "url(#supplyarrow)");
@@ -201,7 +203,7 @@
            .append("textPath") //append a textPath to the text element
            .attr("xlink:href", "#supply") //place the ID of the path here
            .style("font-size", 10)
-           .style("fill", color(0))
+           .style("fill", color(1))
            .text("Total Supply: " + (supply/1000000).toFixed(2) + "M");
           
           
@@ -227,7 +229,7 @@
 
           g.append("text")
            .attr("class", "maxText")
-           .attr("x", 185)
+           .attr("x", 182)
            .attr("dy", -6)
            .append("textPath") //append a textPath to the text element
            .attr("xlink:href", "#max") //place the ID of the path here
