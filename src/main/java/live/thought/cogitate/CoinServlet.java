@@ -68,7 +68,7 @@ public class CoinServlet extends HttpServlet
       double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
           - Cogitate.instance().getCoinBurned();
       double         circulating = supply - locked;
-      double total = 1618000000.0;
+      double total = 1618033988;
       int running = 100;
       
       
@@ -117,7 +117,7 @@ public class CoinServlet extends HttpServlet
       double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
           - Cogitate.instance().getCoinBurned();
       double         circulating = supply - locked;
-      double total = 1617000000.0;
+      double total = 1618033988;
       int running = 100;
       
       
