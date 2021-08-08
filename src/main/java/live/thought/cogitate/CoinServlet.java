@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtClientInterface.BlockChainInfo;
+import live.thought.thought4j.ThoughtClientInterface.MasternodeInfo;
 import live.thought.thought4j.ThoughtRPCClient;
 
 @SuppressWarnings("serial")
@@ -60,17 +61,20 @@ public class CoinServlet extends HttpServlet
     try
     {
       BlockChainInfo bci         = client.getBlockChainInfo();
+      Map<String, MasternodeInfo> masternodes = client.masternodeList();
+      
+      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
 
       double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
           - Cogitate.instance().getCoinBurned();
-      double         circulating = supply - Cogitate.instance().getCoinLocked();
+      double         circulating = supply - locked;
       double total = 1618000000.0;
       int running = 100;
       
       
       // Locked 
-      int lockedPercent = (int) Math.ceil(Cogitate.instance().getCoinLocked()/total * 100.0);
-      double millionLocked = Cogitate.instance().getCoinLocked() / 1000000;
+      int lockedPercent = (int) Math.ceil(locked/total * 100.0);
+      double millionLocked = locked / 1000000;
       running -= lockedPercent;
       String lockedString = String.format("{ name: \"Locked\", millions: %.2f, percent: %d}", millionLocked, lockedPercent);
       
@@ -105,17 +109,21 @@ public class CoinServlet extends HttpServlet
     try
     {
       BlockChainInfo bci         = client.getBlockChainInfo();
+      Map<String, MasternodeInfo> masternodes = client.masternodeList();
+      
+      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
+
 
       double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
           - Cogitate.instance().getCoinBurned();
-      double         circulating = supply - Cogitate.instance().getCoinLocked();
+      double         circulating = supply - locked;
       double total = 1617000000.0;
       int running = 100;
       
       
       // Locked 
-      int lockedPercent = (int) Math.ceil(Cogitate.instance().getCoinLocked()/total * 100.0);
-      double millionLocked = Cogitate.instance().getCoinLocked() / 1000000;
+      int lockedPercent = (int) Math.ceil(locked/total * 100.0);
+      double millionLocked = locked / 1000000;
       running -= lockedPercent;
       String lockedString = String.format("{ name: \"Locked\", millions: %.2f, percent: %d}", millionLocked, lockedPercent);
       
@@ -173,10 +181,13 @@ public class CoinServlet extends HttpServlet
     try
     {
       BlockChainInfo bci    = client.getBlockChainInfo();
+      Map<String, MasternodeInfo> masternodes = client.masternodeList();
+      
+      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
 
       double         supply = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
           - Cogitate.instance().getCoinBurned();
-      double         circulating = supply - Cogitate.instance().getCoinLocked();
+      double         circulating = supply - locked;
       String         output = String.format("%.8f", circulating);
       
       response.setContentType("text/plain");
