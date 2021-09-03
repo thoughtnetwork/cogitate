@@ -78,13 +78,13 @@
                        width = svg.attr("width"),
                        height = svg.attr("height"),
                        radius = Math.min(width, height) / 3 - step,
-          g = svg.append("g").attr("transform", "translate(" + (width / 3) + "," + (height / 2) + ")");
+          g = svg.append("g").attr("transform", "translate(" + (width / 3) + "," + ((height / 2) + 10)  + ")");
           
           var legendG = svg.selectAll(".legend")
                            .data(dataset)
                            .enter().append("g")
                            .attr("transform", function(d,i){
-                                                return "translate(" + (width * 0.65) +  "," + ((height/3) + (i * 20) + 20) + ")";
+                                                return "translate(" + (width * 0.65) +  "," + ((height/3) + (i * 20) + 30) + ")";
                                               })
                            .attr("class", "legend");   
 
@@ -172,7 +172,7 @@
             .attr("dy", -6)
             .append("textPath") //append a textPath to the text element
             .attr("xlink:href", "#circ") //place the ID of the path here
-            .style("font-size", 10)
+            .style("font-size", "10px")
             .style("fill", color(0))
             .text("Circulating Supply: " + (circulating/1000000).toFixed(2) + "M");
           
@@ -202,7 +202,7 @@
            .attr("dy", -6)
            .append("textPath") //append a textPath to the text element
            .attr("xlink:href", "#supply") //place the ID of the path here
-           .style("font-size", 10)
+           .style("font-size", "10px")
            .style("fill", color(1))
            .text("Total Supply: " + (supply/1000000).toFixed(2) + "M");
           
@@ -233,7 +233,7 @@
            .attr("dy", -6)
            .append("textPath") //append a textPath to the text element
            .attr("xlink:href", "#max") //place the ID of the path here
-           .style("font-size", 10)
+           .style("font-size", "10px")
            .style("fill", "white")
            .text("Max Supply: " + (max/1000000).toFixed(0) + "M");
                     
