@@ -3,6 +3,7 @@ package live.thought.cogitate;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -11,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import live.thought.thought4j.ThoughtClientInterface.BlockChainInfo;
+import live.thought.thought4j.ThoughtClientInterface.BlockTemplate;
+import live.thought.thought4j.ThoughtClientInterface.Masternode;
 import live.thought.thought4j.ThoughtClientInterface.MasternodeInfo;
 import live.thought.thought4j.ThoughtRPCClient;
 
@@ -48,6 +51,10 @@ public class CoinServlet extends HttpServlet
       else if (null != query && "svg".equalsIgnoreCase(query))
       {
         doSvg(request,response);
+      }
+      else if (null != query && "apy".equalsIgnoreCase(query))
+      {
+        doApy(request,response);
       }
       else
       {
@@ -193,6 +200,50 @@ public class CoinServlet extends HttpServlet
       response.setContentType("text/plain");
       response.setCharacterEncoding("UTF-8");
       response.setStatus(HttpServletResponse.SC_OK);
+
+      // create HTML response
+      PrintWriter responder = response.getWriter();
+      responder.append(output);    
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
+    }
+  }
+  
+  protected void doApy(HttpServletRequest request, HttpServletResponse response) throws IOException
+  {
+    try
+    {
+      int mnstake = 314000;
+      double blockTime = 1.67;  // minutes
+      double blocksPerDay = 60 * 24 / blockTime;
+      
+      BlockTemplate bt = client.getBlockTemplate();
+      List<Masternode> mnlist = bt.masternode();
+      
+      double mnReward = 0.0;
+      for (Masternode m : mnlist)
+      {
+        mnReward += m.amount();
+      }
+      mnReward /= 100000000; // It's in notions
+      
+      Map<String,MasternodeInfo> mns = client.masternodeList();
+      int mncount = mns.size();
+      
+      // Daily reward per masternode
+      double mndaily = blocksPerDay * mnReward / mncount;
+      
+      double apy = ((mndaily * 365) / mnstake) * 100;
+      
+      
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
+      
+      String         output = String.format("%.4f%%", apy);
 
       // create HTML response
       PrintWriter responder = response.getWriter();
