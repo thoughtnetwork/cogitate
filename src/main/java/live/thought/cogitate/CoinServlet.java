@@ -40,9 +40,21 @@ public class CoinServlet extends HttpServlet
       {
         doTotal(request, response);
       }
+      else if (null != query && "max".equalsIgnoreCase(query))
+      {
+        doMax(request,response);
+      }
       else if (null != query && "circulating".equalsIgnoreCase(query))
       {
         doCirculating(request,response);
+      }
+      else if (null != query && "staked".equalsIgnoreCase(query))
+      {
+        doStaked(request,response);
+      }
+      else if (null != query && "locked".equalsIgnoreCase(query))
+      {
+        doLocked(request,response);
       }
       else if (null != query && "chart".equalsIgnoreCase(query))
       {
@@ -181,7 +193,83 @@ public class CoinServlet extends HttpServlet
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
     }
   }
+  
+  protected void doMax(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+  {
+    try
+    {
+      double total = 1618033988;
+      String         output = String.format("%.8f", total);
+      
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
 
+      // create HTML response
+      PrintWriter responder = response.getWriter();
+      responder.append(output);    
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
+    }
+  }
+
+  protected void doStaked(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException
+  {
+    try
+    {
+      BlockChainInfo bci    = client.getBlockChainInfo();
+      Map<String, MasternodeInfo> masternodes = client.masternodeList();
+      
+      double staked = 314000 * masternodes.size();
+
+      String         output = String.format("%.8f", staked);
+      
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
+
+      // create HTML response
+      PrintWriter responder = response.getWriter();
+      responder.append(output);    
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
+    }
+  }
+  
+  protected void doLocked(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, IOException
+  {
+    try
+    {
+      BlockChainInfo bci    = client.getBlockChainInfo();
+      Map<String, MasternodeInfo> masternodes = client.masternodeList();
+      
+      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
+
+      String         output = String.format("%.8f", locked);
+      
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
+
+      // create HTML response
+      PrintWriter responder = response.getWriter();
+      responder.append(output);    
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
+    }
+  }
+  
   protected void doCirculating(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, IOException
   {
