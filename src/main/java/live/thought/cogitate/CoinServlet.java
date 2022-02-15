@@ -305,7 +305,7 @@ public class CoinServlet extends HttpServlet
     try
     {
       int mnstake = 314000;
-      double blockTime = 1.67;  // minutes
+      double blockTime = 1.618;  // minutes
       double blocksPerDay = 60 * 24 / blockTime;
       
       BlockTemplate bt = client.getBlockTemplate();
