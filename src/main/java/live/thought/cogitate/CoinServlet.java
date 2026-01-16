@@ -25,6 +25,11 @@ public class CoinServlet extends HttpServlet
   private static final TemplateRenderer chartRenderer = new TemplateRenderer("chart.html");
   private static final TemplateRenderer svgRenderer = new TemplateRenderer("svg.html");
 
+  protected static final long HALVING_INTERVAL =  1299382;
+  protected static final double MASTERNODE_STAKE = 314000.0;
+  protected static final double BASE_REWARD = 314.0;
+  protected static final double MAX_SUPPLY = 1618033988.0;
+
   public CoinServlet()
   {
     URL thoughtUrl = Cogitate.instance().getThoughtURL();
@@ -68,6 +73,10 @@ public class CoinServlet extends HttpServlet
       {
         doApy(request,response);
       }
+      else if (null != query && "emissions".equalsIgnoreCase(query))
+      {
+        doEmissions(request, response);
+      }
       else
       {
         response.sendError(400, "Malformed query");
@@ -84,10 +93,10 @@ public class CoinServlet extends HttpServlet
       
       double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
 
-      double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
+      double         supply      = calculateEmissions(1, bci.blocks())
           - Cogitate.instance().getCoinBurned();
       double         circulating = supply - locked;
-      double total = 1618033988;
+      double total = MAX_SUPPLY;
       int running = 100;
       
       
@@ -133,10 +142,10 @@ public class CoinServlet extends HttpServlet
       double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
 
 
-      double         supply      = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
+      double         supply      = calculateEmissions(1, bci.blocks())
           - Cogitate.instance().getCoinBurned();
       double         circulating = supply - locked;
-      double total = 1618033988;
+      double total = MAX_SUPPLY;
       int running = 100;
       
       
@@ -175,7 +184,7 @@ public class CoinServlet extends HttpServlet
     {
       BlockChainInfo bci    = client.getBlockChainInfo();
 
-      double         supply = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
+      double         supply = calculateEmissions(1, bci.blocks())
           - Cogitate.instance().getCoinBurned();
       String         output = String.format("%.8f", supply);
       
@@ -198,8 +207,31 @@ public class CoinServlet extends HttpServlet
   {
     try
     {
-      double total = 1618033988;
+      double total = MAX_SUPPLY;
       String         output = String.format("%.8f", total);
+      
+      response.setContentType("text/plain");
+      response.setCharacterEncoding("UTF-8");
+      response.setStatus(HttpServletResponse.SC_OK);
+
+      // create HTML response
+      PrintWriter responder = response.getWriter();
+      responder.append(output);    
+    }
+    catch (Exception e)
+    {
+      e.printStackTrace();
+      response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
+    }
+  }
+
+  protected void doEmissions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+  {
+    try
+    {
+      BlockChainInfo bci    = client.getBlockChainInfo();
+      double         emitted = calculateEmissions(1, bci.blocks());
+      String         output = String.format("%.8f", emitted);
       
       response.setContentType("text/plain");
       response.setCharacterEncoding("UTF-8");
@@ -221,10 +253,9 @@ public class CoinServlet extends HttpServlet
   {
     try
     {
-      BlockChainInfo bci    = client.getBlockChainInfo();
       Map<String, MasternodeInfo> masternodes = client.masternodeList();
       
-      double staked = 314000 * masternodes.size();
+      double staked = MASTERNODE_STAKE * masternodes.size();
 
       String         output = String.format("%.8f", staked);
       
@@ -248,10 +279,9 @@ public class CoinServlet extends HttpServlet
   {
     try
     {
-      BlockChainInfo bci    = client.getBlockChainInfo();
       Map<String, MasternodeInfo> masternodes = client.masternodeList();
       
-      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
+      double locked = Cogitate.instance().getCoinLocked() + (MASTERNODE_STAKE * masternodes.size());
 
       String         output = String.format("%.8f", locked);
       
@@ -278,9 +308,9 @@ public class CoinServlet extends HttpServlet
       BlockChainInfo bci    = client.getBlockChainInfo();
       Map<String, MasternodeInfo> masternodes = client.masternodeList();
       
-      double locked = Cogitate.instance().getCoinLocked() + (314000 * masternodes.size());
+      double locked = Cogitate.instance().getCoinLocked() + (MASTERNODE_STAKE * masternodes.size());
 
-      double         supply = ((bci.blocks() - 1) * 314) + Cogitate.instance().getCoinPremine()
+      double         supply = calculateEmissions(1, bci.blocks() - 1)
           - Cogitate.instance().getCoinBurned();
       double         circulating = supply - locked;
       String         output = String.format("%.8f", circulating);
@@ -304,7 +334,7 @@ public class CoinServlet extends HttpServlet
   {
     try
     {
-      int mnstake = 314000;
+      int mnstake = (int)MASTERNODE_STAKE;
       double blockTime = 1.618;  // minutes
       double blocksPerDay = 60 * 24 / blockTime;
       
@@ -342,5 +372,42 @@ public class CoinServlet extends HttpServlet
       e.printStackTrace();
       response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Thought Daemon not responding");
     }
+  }
+
+  protected double calculateEmissions(long start, long end) {
+    double retval = 0;
+    double reward = BASE_REWARD;
+
+    // Sanity check
+    if (end < start) {
+      throw new IllegalArgumentException("End block less than start block.");
+    }
+
+    // Block 1 has its own special reward.
+    if (start <= 1) {
+      retval += Cogitate.instance().getCoinPremine();
+      start = 2;
+    }
+
+    // Determine how many halvings there have been at the start block, just in case
+    // we're calculating from a higher block.
+    long halvingsAtStart = start / HALVING_INTERVAL;
+    // If we're starting higher, do the halvings
+    for (int i = 0; i < halvingsAtStart; i++) {
+      reward = reward / 2.0;
+    }
+
+    // Now loop through the blocks and sum up the reward
+    for (long i = start; i <= end; i++) {
+      // Sanity check
+      if (retval >= MAX_SUPPLY) break;
+      // Check to see if it's time to halve
+      if (i % HALVING_INTERVAL == 0) {
+        reward = reward / 2.0;
+      }
+      // Add a block reward
+      retval += reward;
+    }
+    return retval;
   }
 }
